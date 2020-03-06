@@ -1,5 +1,50 @@
 $(function () {
 
+    // Using trigger custom event
+    var pathname = window.location.pathname;
+
+    $(document).on('view:HomePage',function(){
+        console.log('Home Page Tracked')
+    });
+
+    if (pathname === '/index.html' || pathname === '/') {
+        $(document).trigger('view:HomePage');
+      
+    }
+    
+    if (pathname === '/basket.html' || pathname === '/') {
+        $(document).trigger('view:Basket');
+    }
+
+    if (pathname ==='/detail.html') {
+        $(document).trigger('view:ProductPage');
+    }
+
+    if (pathname ==='/checkout1.html') {
+        $(document).trigger('view:Checkout');
+    }
+
+    if (pathname ==='/checkout2.html') {
+        $(document).trigger('view:Delivery');
+    }
+
+    if (pathname ==='/checkout3.html') {
+        $(document).trigger('view:Payment');  
+    }
+
+    $(document).on('conversion',function(){
+       console.log('purchased');   
+    });
+
+    
+    $('.box-footer [type=submit]').click(function(){
+        $(document).trigger('conversion');
+        alert('converted')
+    });  
+    
+
+
+
     $('.shop-detail-carousel').owlCarousel({
         items: 1,
         thumbs: true,
