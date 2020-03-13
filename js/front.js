@@ -1,3 +1,11 @@
+// Google Tag Manager
+
+(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-TF54DJB');
+
 $(function () {
 
     // Using trigger custom event
@@ -43,7 +51,105 @@ $(function () {
     });  
     
 
+    function getPageName(){
+        var pathname = window.location.pathname;
+        if (pathname.indexOf('index.html') > -1) {
+            return 'HomePage';
+        } else if (pathname.indexOf('detail.html') > -1) {
+            return 'ProductPage';
+        } else if (pathname.indexOf('checkout4.html') > -1) {
+            return 'Checkout4';
+        }
+    }
 
+    function getProductInfo(){
+        return {
+            productName: $('#productMain h1.text-center').text(),
+            productPrice: $('#productMain .price').text()
+        };
+    }
+    
+    function generateUniqueId(length) {
+        var result           = '';
+        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+           result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+     }
+
+    function getCartInfo(){
+        var productInfoEls = $('#checkout table tbody tr');
+        var result = {};
+
+        result.actionField = {
+            id: generateUniqueId(16),
+            revenue: $('#checkout table tfoot th').eq(1).text().match(/\d+/g).join('.')
+        };
+
+        result.products = [];
+
+        $.each(productInfoEls, function(index, el){
+            result.products.push({
+                name: $(el).children().eq(1).text(),
+                quantity: $(el).children().eq(2).text(),
+                price: $(el).children().eq(3).text().match(/\d+/g).join('.'),
+                discount: $(el).children().eq(4).text()
+            });
+        });
+
+        return result;
+    }
+
+    function getParam(){
+        var pageName = getPageName();
+        var result = null;
+
+        if (pageName === 'ProductPage') {
+            result = getProductInfo();
+            return result;
+        } else if (pageName === 'Checkout4') {
+            result = getCartInfo();
+            return result;
+        }
+
+        return result;
+    } 
+
+    function triggerPageEvent(){
+        var pageName = getPageName();
+        var params = getParam();
+        
+        if (pageName === 'Checkout4') {
+            window.dataLayer.push({
+                'ecommerce': {
+                    'purchase': getCartInfo()
+                }
+            }); 
+            // specific event listener for checkout4 Page
+            $('#checkout button').on('click', function(){
+                $(document).trigger('conversion', params);
+            });
+        } else {
+            $(document).trigger('view:' + pageName, params);
+        }
+    }
+        
+
+    $(document).on('view:ProductPage', function(event, params){
+        console.log('The first parameter that I received is: ');
+        console.log(event);
+
+        console.log('The second parameter that I received is: ')
+        console.log(params);
+
+        // ga('send', 'event', 'ProductPage', 'View', params.productName, {
+        //     nonInteraction: true
+        // });
+    });
+
+    triggerPageEvent();
 
     $('.shop-detail-carousel').owlCarousel({
         items: 1,
